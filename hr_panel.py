@@ -6,7 +6,7 @@ import pandas as pd
 # Streamlit UI
 st.title("Apexnuera HR Panel")
 
-# --- Google Sheets Setup (same as before) ---
+# --- Google Sheets Setup ---
 try:
     scope = [
         "https://spreadsheets.google.com/feeds",
@@ -41,9 +41,8 @@ with st.form("add_data_form"):
             st.warning("Please fill in all fields to add a new entry.")
 
 ---
-## ➖ Delete Existing Entries
 
-To enable deletion, we first need to display the current data from your Google Sheet. This allows users to see what's available and choose which row to remove. We'll use a **dataframe** for better visualization and selection.
+## ➖ Delete Existing Entries
 
 ```python
 # --- Display and Delete Data Section ---
@@ -65,32 +64,34 @@ df = load_data()
 if not df.empty:
     st.dataframe(df, use_container_width=True)
 
-    st.warning("Select the row(s) you wish to delete from the table above.")
+    st.warning("Select the row(s) you wish to delete using the checkboxes below.")
 
-    # Allow user to select row(s) for deletion
-    # Streamlit's data editor can be used for selection
-    edited_df = st.data_editor(df, num_rows="dynamic", hide_index=True)
-
-    # Find the difference to identify deleted rows
-    # This approach is suitable if you want to allow direct deletion via the editor
-    # However, for explicit delete buttons, we'll use a different method below.
-
-    # For explicit deletion, it's often clearer to have a separate "delete" column or selection
     # Let's add a checkbox next to each row for deletion
     rows_to_delete = []
     st.write("---")
-    st.subheader("Select Rows to Delete (using checkboxes)")
+    st.subheader("Select Rows to Delete")
+
+    # To ensure consistent layout for checkboxes and data
+    # Create columns for the display and a separate one for the checkbox
+    display_cols = st.columns(3) # For Course, Opening, Timing
+
+    # Create a list to hold the state of each checkbox
+    checkbox_states = [False] * len(df)
+
     for i, row in df.iterrows():
-        col1, col2, col3, col4 = st.columns([3, 3, 3, 1])
-        with col1:
-            st.write(row["Course Name"]) # Assuming column names from your sheet
-        with col2:
-            st.write(row["Job Opening"])
-        with col3:
-            st.write(row["Course Timing"])
-        with col4:
-            if st.checkbox(f"Delete", key=f"delete_row_{i}"):
-                rows_to_delete.append(i + 2) # +2 because sheets are 1-indexed and header row
+        # Display data in the first three columns
+        with display_cols[0]:
+            st.write(row.get("Course Name", "N/A")) # Use .get() for safety
+        with display_cols[1]:
+            st.write(row.get("Job Opening", "N/A"))
+        with display_cols[2]:
+            st.write(row.get("Course Timing", "N/A"))
+
+        # Add checkbox in a separate column to the right
+        if st.checkbox(f"Delete", key=f"delete_row_{i}"):
+            rows_to_delete.append(i + 2) # +2 because sheets are 1-indexed and header row
+
+    st.write("---") # Separator before the delete button
 
     if st.button("Confirm Deletion", type="secondary"):
         if rows_to_delete:
