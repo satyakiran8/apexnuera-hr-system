@@ -40,11 +40,9 @@ with st.form("add_data_form"):
         else:
             st.warning("Please fill in all fields to add a new entry.")
 
----
+# --- Visual Separator for Streamlit UI ---
+st.markdown("---")
 
-## ➖ Delete Existing Entries
-
-```python
 # --- Display and Delete Data Section ---
 st.header("➖ Delete Existing Entries")
 
@@ -66,29 +64,47 @@ if not df.empty:
 
     st.warning("Select the row(s) you wish to delete using the checkboxes below.")
 
-    # Let's add a checkbox next to each row for deletion
-    rows_to_delete = []
-    st.write("---")
+    st.markdown("---") # Visual separator within the delete section
     st.subheader("Select Rows to Delete")
 
-    # To ensure consistent layout for checkboxes and data
-    # Create columns for the display and a separate one for the checkbox
-    display_cols = st.columns(3) # For Course, Opening, Timing
+    # To ensure consistent layout for checkboxes and data when displaying for deletion
+    # We'll manually create columns for each row
+    rows_to_delete = []
 
-    # Create a list to hold the state of each checkbox
-    checkbox_states = [False] * len(df)
-
+    # Prepare data for display with checkboxes
+    # Create a list of dictionaries where each dict represents a row with its data and a placeholder for checkbox
+    display_data = []
     for i, row in df.iterrows():
-        # Display data in the first three columns
-        with display_cols[0]:
-            st.write(row.get("Course Name", "N/A")) # Use .get() for safety
-        with display_cols[1]:
-            st.write(row.get("Job Opening", "N/A"))
-        with display_cols[2]:
-            st.write(row.get("Course Timing", "N/A"))
+        display_data.append({
+            "Course Name": row.get("Course Name", "N/A"),
+            "Job Opening": row.get("Job Opening", "N/A"),
+            "Course Timing": row.get("Course Timing", "N/A"),
+            "Select to Delete": False # Placeholder for checkbox in st.data_editor
+        })
 
-        # Add checkbox in a separate column to the right
-        if st.checkbox(f"Delete", key=f"delete_row_{i}"):
+    # Convert to DataFrame for st.data_editor
+    editable_df = pd.DataFrame(display_data)
+
+    # Use st.data_editor for a more interactive and cleaner selection
+    edited_df = st.data_editor(
+        editable_df,
+        column_config={
+            "Select to Delete": st.column_config.CheckboxColumn(
+                "Select to Delete",
+                help="Select rows to delete",
+                default=False,
+            )
+        },
+        disabled=df.columns.tolist(), # Disable editing of data columns
+        hide_index=True,
+        use_container_width=True
+    )
+
+    # Identify rows marked for deletion
+    # Checkbox state is in the 'Select to Delete' column of edited_df
+    # We need to map this back to the original sheet index
+    for i, row in edited_df.iterrows():
+        if row["Select to Delete"]:
             rows_to_delete.append(i + 2) # +2 because sheets are 1-indexed and header row
 
     st.write("---") # Separator before the delete button
