@@ -21,33 +21,33 @@ def delete_entry(column_name, selected_value):
             return True
     return False
 
-st.title("📋 Apexneura HR Panel")
+st.title("\ud83d\udccb Apexneura HR Panel")
 
 # ---------------- ADD COURSE ----------------
-st.subheader("➕ Add Course")
+st.subheader("\u2795 Add Course")
 course = st.text_input("Course Name")
 timing = st.text_input("Course Timing")
 
 if st.button("Add Course"):
     if course and timing:
         sheet.append_row([course, timing, ""])
-        st.success("✅ Course added.")
+        st.success("\u2705 Course added.")
     else:
-        st.warning("⚠️ Please fill both fields.")
+        st.warning("\u26a0\ufe0f Please fill both fields.")
 
 # ---------------- ADD JOB ----------------
-st.subheader("➕ Add Job Opening")
+st.subheader("\u2795 Add Job Opening")
 job = st.text_input("Job Opening")
 
 if st.button("Add Job"):
     if job:
         sheet.append_row(["", "", job])
-        st.success("✅ Job opening added.")
+        st.success("\u2705 Job opening added.")
     else:
-        st.warning("⚠️ Enter a job opening.")
+        st.warning("\u26a0\ufe0f Enter a job opening.")
 
 # ---------------- DELETE COURSE ----------------
-st.subheader("🗑️ Delete Course")
+st.subheader("\ud83d\uddd1\ufe0f Delete Course")
 data = get_data()
 courses = [row["Course Name"] for row in data if row["Course Name"]]
 
@@ -55,33 +55,33 @@ if courses:
     selected_course = st.selectbox("Select course to delete", courses)
     if st.button("Delete Course"):
         if delete_entry("Course Name", selected_course):
-            st.success(f"✅ Deleted course: {selected_course}")
+            st.success(f"\u2705 Deleted course: {selected_course}")
             st.experimental_rerun()
         else:
-            st.error("❌ Could not delete. Course not found.")
+            st.error("\u274c Could not delete. Course not found.")
 
 # ---------------- DELETE JOB ----------------
-st.subheader("🗑️ Delete Job Opening")
+st.subheader("\ud83d\uddd1\ufe0f Delete Job Opening")
 jobs = [row["Job Opening"] for row in data if row["Job Opening"]]
 
 if jobs:
     selected_job = st.selectbox("Select job to delete", jobs)
     if st.button("Delete Job"):
         if delete_entry("Job Opening", selected_job):
-            st.success(f"✅ Deleted job: {selected_job}")
+            st.success(f"\u2705 Deleted job: {selected_job}")
             st.experimental_rerun()
         else:
-            st.error("❌ Could not delete. Job not found.")
+            st.error("\u274c Could not delete. Job not found.")
 
 # ---------------- DELETE TIMING ----------------
-st.subheader("🗑️ Delete Course Timing")
+st.subheader("\ud83d\uddd1\ufe0f Delete Course Timing")
 timings = [row["Course Timing"] for row in data if row["Course Timing"]]
 
 if timings:
     selected_timing = st.selectbox("Select timing to delete", timings)
     if st.button("Delete Timing"):
         if delete_entry("Course Timing", selected_timing):
-            st.success(f"✅ Deleted timing: {selected_timing}")
+            st.success(f"\u2705 Deleted timing: {selected_timing}")
             st.experimental_rerun()
         else:
-            st.error("❌ Could not delete. Timing not found.")
+            st.error("\u274c Could not delete. Timing not found.")
