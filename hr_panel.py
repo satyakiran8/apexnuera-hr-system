@@ -2,35 +2,29 @@ import streamlit as st
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-# Streamlit UI
+# Google Sheets setup
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+client = gspread.authorize(creds)
+sheet = client.open("apexnuera_data").sheet1
+
 st.title("Apexnuera HR Panel")
 
-# Input fields
-course = st.text_input("Enter Course Name")
-opening = st.text_input("Enter Job Opening")
-timing = st.text_input("Enter Course Timing")
+st.header("Add Course, Timing & Job")
 
-# On Submit
-if st.button("Submit"):
-    try:
-        # Define Google Sheets API scope
-        scope = [
-            "https://spreadsheets.google.com/feeds",
-            "https://www.googleapis.com/auth/drive"
-        ]
+st.subheader("Add Course")
+course = st.text_input("Course Name")
+timing = st.text_input("Course Timing")
 
-        # Load credentials securely from secrets.toml
-        creds = ServiceAccountCredentials.from_json_keyfile_dict(
-            st.secrets["gcp_service_account"], scope
-        )
+st.subheader("Add Job Opening")
+job = st.text_input("Job Opening")
 
-        # Authorize and open the sheet
-        client = gspread.authorize(creds)
-        sheet = client.open("apexnuera_data").sheet1  # name of your Google Sheet
-
-        # Add new row to sheet
-        sheet.append_row([course, opening, timing])
-        st.success("✅ Data submitted successfully!")
-
-    except Exception as e:
-        st.error(f"❌ Error: {e}")
+if st.button("Submit All"):
+    if course and timing:
+        sheet.append_row([course, timing, ""])
+        st.success("Course added successfully")
+    if job:
+        sheet.append_row(["", "", job])
+        st.success("Job opening added successfully")
+    if not course and not timing and not job:
+        st.warning("Please fill at least one section to submit.")
