@@ -3,7 +3,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 # Streamlit UI
-st.title("Apexneura HR Panel")
+st.title("Apexnuera HR Panel")
 
 # Input fields
 course = st.text_input("Enter Course Name")
@@ -26,7 +26,7 @@ if st.button("Submit"):
 
         # Authorize and open the sheet
         client = gspread.authorize(creds)
-        sheet = client.open("apexneura_data").sheet1
+        sheet = client.open("apexnuera_data").sheet1
 
         # Add new row to sheet
         sheet.append_row([course, opening, timing])
