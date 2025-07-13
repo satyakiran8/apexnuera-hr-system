@@ -2,75 +2,73 @@ import streamlit as st
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-# Set up Google Sheets connection
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+# Set up the title
+st.title("Apexnuera HR Panel")
+
+# Set up credentials and access the Google Sheet
+scope = [
+    "https://spreadsheets.google.com/feeds",
+    "https://www.googleapis.com/auth/drive"
+]
+creds = ServiceAccountCredentials.from_json_keyfile_dict(
+    st.secrets["gcp_service_account"], scope
+)
 client = gspread.authorize(creds)
 sheet = client.open("apexnuera_data").sheet1
 
-# Helper to get all rows
-def get_all_data():
-    return sheet.get_all_records()
+# Fetch data from sheet
+data = sheet.get_all_records()
 
-# Title
-st.title("Apexnuera HR Panel")
+# Helper functions
+def update_sheet(new_row):
+    sheet.append_row(new_row)
 
-# --- Add Course Section ---
-st.subheader("📘 Add Course")
+def delete_row_by_value(column_index, value):
+    cell = sheet.find(value)
+    if cell and cell.col == column_index:
+        sheet.delete_rows(cell.row)
+
+# Add Course Section
+st.subheader("➕ Add Course")
 course_name = st.text_input("Course Name")
-course_timing = st.text_input("Course Timing")
+course_time = st.text_input("Course Timing")
 if st.button("Add Course"):
-    sheet.append_row([course_name, course_timing, ""])
-    st.success("✅ Course added successfully!")
+    if course_name and course_time:
+        update_sheet([course_name, "", course_time])
+        st.success("✅ Course added successfully")
+    else:
+        st.warning("⚠️ Please enter both course name and timing")
 
-# --- Add Job Section ---
+# Add Job Opening Section
 st.subheader("➕ Add Job Opening")
 job_opening = st.text_input("Job Opening")
 if st.button("Add Job Opening"):
-    sheet.append_row(["", "", job_opening])
-    st.success("✅ Job added successfully!")
+    if job_opening:
+        update_sheet(["", job_opening, ""])
+        st.success("✅ Job opening added successfully")
+    else:
+        st.warning("⚠️ Please enter job opening")
 
-# --- Delete Course ---
+# Delete Course Section
 st.subheader("🗑️ Delete Course")
-if st.checkbox("Show and delete courses"):
-    data = get_all_data()
-    course_list = list({row['Course Name'] for row in data if row['Course Name']})
-    selected_course = st.selectbox("Select course to delete", course_list)
-    if st.button("Delete Selected Course"):
-        confirm = st.radio("Are you sure?", ["No", "Yes"])
-        if confirm == "Yes":
-            for i, row in enumerate(data, start=2):
-                if row['Course Name'] == selected_course:
-                    sheet.delete_row(i)
-                    st.success("✅ Course deleted.")
-                    break
+courses = [row["Course Name"] for row in data if row["Course Name"]]
+selected_course = st.selectbox("Select a course to delete", courses)
+if st.button("Delete Course"):
+    delete_row_by_value(1, selected_course)
+    st.success(f"✅ Deleted course: {selected_course}")
 
-# --- Delete Job Opening ---
+# Delete Job Opening Section
 st.subheader("🗑️ Delete Job Opening")
-if st.checkbox("Show and delete job openings"):
-    data = get_all_data()
-    job_list = list({row['Job Opening'] for row in data if row['Job Opening']})
-    selected_job = st.selectbox("Select job to delete", job_list)
-    if st.button("Delete Selected Job Opening"):
-        confirm = st.radio("Are you sure?", ["No", "Yes"])
-        if confirm == "Yes":
-            for i, row in enumerate(data, start=2):
-                if row['Job Opening'] == selected_job:
-                    sheet.delete_row(i)
-                    st.success("✅ Job deleted.")
-                    break
+jobs = [row["Job Opening"] for row in data if row["Job Opening"]]
+selected_job = st.selectbox("Select a job to delete", jobs)
+if st.button("Delete Job Opening"):
+    delete_row_by_value(2, selected_job)
+    st.success(f"✅ Deleted job: {selected_job}")
 
-# --- Delete Course Timing ---
+# Delete Course Timing Section
 st.subheader("🗑️ Delete Course Timing")
-if st.checkbox("Show and delete course timings"):
-    data = get_all_data()
-    timing_list = list({row['Course Timing'] for row in data if row['Course Timing']})
-    selected_timing = st.selectbox("Select timing to delete", timing_list)
-    if st.button("Delete Selected Course Timing"):
-        confirm = st.radio("Are you sure?", ["No", "Yes"])
-        if confirm == "Yes":
-            for i, row in enumerate(data, start=2):
-                if row['Course Timing'] == selected_timing:
-                    sheet.delete_row(i)
-                    st.success("✅ Timing deleted.")
-                    break
+timings = [row["Course Timing"] for row in data if row["Course Timing"]]
+selected_timing = st.selectbox("Select course timing to delete", timings)
+if st.button("Delete Course Timing"):
+    delete_row_by_value(3, selected_timing)
+    st.success(f"✅ Deleted course timing: {selected_timing}")
